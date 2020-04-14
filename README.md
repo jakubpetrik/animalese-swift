@@ -4,7 +4,7 @@
 
 A Swift port of https://github.com/Acedio/animalese.js.
 
-## Usage
+### Usage
 
 ```swift
 import SwiftUI
