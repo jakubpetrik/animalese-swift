@@ -1,29 +1,20 @@
 import Foundation
 
 public struct Animalese {
-    private let letterLibrary: Data
-    private let config: Config
+    public let letterLibrary: Data
+    public let sampleRate: Double
+    public let libraryLetterSeconds: Double
+    public let librarySamplesPerLetter: Int
+    public let outputLetterSeconds: Double
+    public let outputSamplesPerLetter: Int
 
-    public struct Config {
-        public let sampleRate: Double
-        public let libraryLetterSeconds: Double
-        public let outputLetterSeconds: Double
-
-        let librarySamplesPerLetter: Int
-        let outputSamplesPerLetter: Int
-
-        public init(sampleRate: Double, libraryLetterSeconds: Double, outputLetterSeconds: Double) {
-            self.sampleRate = sampleRate
-            self.libraryLetterSeconds = libraryLetterSeconds
-            self.outputLetterSeconds = outputLetterSeconds
-            librarySamplesPerLetter = Int(floor(libraryLetterSeconds * sampleRate))
-            outputSamplesPerLetter = Int(floor(outputLetterSeconds * sampleRate))
-        }
-    }
-
-    public init(letterLibrary: Data, config: Config) {
+    public init(letterLibrary: Data, sampleRate: Double, libraryLetterSeconds: Double, outputLetterSeconds: Double) {
         self.letterLibrary = letterLibrary
-        self.config = config
+        self.sampleRate = sampleRate
+        self.libraryLetterSeconds = libraryLetterSeconds
+        self.outputLetterSeconds = outputLetterSeconds
+        librarySamplesPerLetter = Int(floor(libraryLetterSeconds * sampleRate))
+        outputSamplesPerLetter = Int(floor(outputLetterSeconds * sampleRate))
     }
 
     public func synthesize(_ script: String, shortenWords: Bool, pitch: Double) -> Data {
@@ -42,19 +33,19 @@ public struct Animalese {
 
         for c in processedScript.uppercased() {
             if (c >= "A" && c <= "Z") {
-                let libraryLetterStart = config.librarySamplesPerLetter * Int(c.asciiValue! - Character("A").asciiValue!)
-                for i in 0..<config.outputSamplesPerLetter {
+                let libraryLetterStart = librarySamplesPerLetter * Int(c.asciiValue! - Character("A").asciiValue!)
+                for i in 0..<outputSamplesPerLetter {
                     let sampleIndex = dataOffset + libraryLetterStart + Int(floor(Double(i) * pitch))
                     data.append(letterLibrary[sampleIndex])
                 }
             } else { // non pronouncable character or space
-                for _ in 0..<config.outputSamplesPerLetter {
+                for _ in 0..<outputSamplesPerLetter {
                     data.append(127)
                 }
             }
         }
 
-        return data.wav(sampleRate: Int32(config.sampleRate))
+        return data.wav(sampleRate: Int32(sampleRate))
     }
 
     private func shorten(word: String.SubSequence) -> String {
